@@ -36,46 +36,8 @@ void ProcessorPlugin::updateSettings()
         numChannels = getNumInputs();
 
     }
-    //for (int i = 0; i < getNumInputs(); i++)
-    //{
-    //    uint32 channelSubprocessor = getDataSubprocId(i);
-
-    //    numChannelsInSubprocessor.insert({ channelSubprocessor, 0 }); // (if not already there)
-    //    numChannelsInSubprocessor[channelSubprocessor]++;
-
-    //    subprocessorSampleRate.insert({ channelSubprocessor, getDataChannel(i)->getSampleRate() });
-    //}
-
-    //numSubprocessors = numChannelsInSubprocessor.size();
-
+    
     displayBuffers = std::make_shared<AudioSampleBuffer>(8, 100);
-
-    //displayBuffers.clear();
-
-    //for (int i = 0; i < numSubprocessors; i++)
-    //    displayBuffers.push_back(std::make_shared<AudioSampleBuffer>(8, 100)); //just temporary size, the actual size will be set in resizeBuffer()
-
-    //displayBufferIndices.resize(numChannels);
-
-    //channelIndices.resize(numSubprocessors);
-
-    //if (numChannelsInSubprocessor.find(subprocessorToDraw) == numChannelsInSubprocessor.end())
-    //{
-    //    // subprocessor to draw does not exist
-    //    if (numSubprocessors == 0)
-    //    {
-    //        subprocessorToDraw = 0;
-    //    }
-    //    else
-    //    {
-    //        // there are channels, but none on the current subprocessorToDraw
-    //        // default to the first subprocessor
-    //        subprocessorToDraw = getDataSubprocId(0);
-    //    }
-    //}
-
-    //int numChans = getNumSubprocessorChannels();
-    //int srate = getSubprocessorSampleRate(subprocessorToDraw);
 
     std::cout << "Re-setting num inputs on ProcessorPlugin to " << numChannels << std::endl;
     if (numChannels > 0)
@@ -85,20 +47,12 @@ void ProcessorPlugin::updateSettings()
 
 
 
-    // update the editor's subprocessor selection display and sample rate
-    //LfpDisplayEditor* ed = (LfpDisplayEditor*)getEditor();
-    //ed->updateSubprocessorSelectorOptions();
-
     resizeBuffer();
 
 
 }
 
 
-//uint32 ProcessorPlugin::getEventSourceId(const EventChannel* event)
-//{
-//    return getProcessorFullId(event->getTimestampOriginProcessor(), event->getTimestampOriginSubProcessor());
-//}
 
 uint32 ProcessorPlugin::getChannelSourceId(const InfoObjectCommon* chan)
 {
@@ -147,9 +101,6 @@ float ProcessorPlugin::getSubprocessorSampleRate(uint32 subprocId)
 
 bool ProcessorPlugin::resizeBuffer()
 {
- /*   LfpDisplayEditor* ed = (LfpDisplayEditor*)getEditor();
-    allSubprocessors = ed->getInputSubprocessors();*/ // contains the id of the subprocessor
-
     int totalResized = 0;
 
     ScopedLock displayLock(displayMutex);
@@ -184,26 +135,14 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
     {
         ScopedLock displayLock(displayMutex);
 
-        //if (true)
-        //{
-        //    initializeEventChannels();
-        //    checkForEvents(); // see if we got any TTL events
-        //    finalizeEventChannels();
-        //}
 
         if (true)
         {
             int channelIndex = -1;
-            //channelIndices.insertMultiple(0, -1, numSubprocessors);
-    /*        uint32 subProcId = 0;
-            int currSubproc = -1;*/
 
             for (int chan = 0; chan < buffer.getNumChannels(); ++chan)
             {
-                //subProcId = getDataSubprocId(chan);
-                //currSubproc = allSubprocessors.indexOf(subProcId);
 
-                //channelIndices.set(currSubproc, channelIndices[currSubproc] + 1);
 
                 const int samplesLeft = displayBuffers->getNumSamples() - displayBufferIndices[chan];
                 const int nSamples = getNumSamples(chan);
