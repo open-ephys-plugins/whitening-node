@@ -1,8 +1,10 @@
 #include "ProcessorPlugin.h"
-#include "Eigen/Dense"
 
 using namespace ProcessorPluginSpace;
-using Eigen::MatrixXd;
+using Eigen::MatrixXf;
+using std::sqrt;
+
+#define DATA_CHANNEL 16 //tetrode channels, TODO: hardcoded for nowm need to get the neural data channels
 
 //Change all names for the relevant ones, including "Processor Name"
 ProcessorPlugin::ProcessorPlugin() : 
@@ -126,23 +128,106 @@ bool ProcessorPlugin::resizeBuffer()
 
 }
 
+void ProcessorPlugin::calculateWhiteningMatrix() {
+    // Calculate the whitening matrix based on data in the buffer
+
+     /*
+    the AudioSampleBuffer is using a HeapBlock underneath. It contains two main segments. The first segment contains
+    a list of pointers to the beginning memory location of each channel's data. The second segment contains the actual data.
+    getArrayofReadPointers() will return the pointer to the list of channel pointers, while getReadpointers() will return the pointer to the data itself
+    data is arranged in channel-major format
+
+    */
+    
+    // Copy data over to the 
+  /*  AudioSampleBuffer buffer_copy;
+    buffer_copy.makeCopyOf(buffer);*/
+    int numSample = displayBuffers->getNumSamples();
+    int numChannel = displayBuffers->getNumChannels();
+    auto buffer_ptr = displayBuffers->getWritePointer(0); //get the beginning of the data
+    Eigen::Map<MatrixXf> m(buffer_ptr, DATA_CHANNEL, numSample); // channel x time
+
+    //MatrixXf m(3,6);
+
+   /* m << 1, 2, 3, 4, 5, 6,
+        1, 3, 2, 4, 5, 6,
+        1, 3, 2, 4, 5, 8;
+    int numSample = 6;*/
+
+    //cout << "m:" << endl << m << endl;
+
+    auto mean = m.rowwise().mean();
+    //std::cout << mean << endl;
+
+    // subtract the mean
+    m = m.colwise() - mean;
+
+     //Covariation matrix
+    auto AAt = m * m.transpose() / numSample;
+   /* cout << "Covariance matrix" << endl << AAt <<endl;*/
+
+    // SVD
+    Eigen::BDCSVD<MatrixXf> svdSolver;
+    svdSolver.compute(AAt, Eigen::ComputeFullU|Eigen::ComputeFullV);
+
+    auto U = svdSolver.matrixU();
+    auto V = svdSolver.matrixV();
+    auto S = svdSolver.singularValues();
+    S.array() += 0.0001; //avoid divide by zero
+
+    //cout << "U" << endl;
+    //cout << U << endl;
+
+    //cout << "V" << endl;
+    //cout << V << endl;
+
+  /*  cout << "S" << endl;
+    cout << S << endl;*/
+
+
+    // Apply whitening
+    auto sinv = S.matrix().cwiseSqrt().cwiseInverse().asDiagonal();
+    m_W = (U * sinv * V.transpose());
+
+   /* cout << "W" << endl;
+    cout << m_W << endl;*/
+
+    m_whiteningMatrixReady = true;
+
+
+}
+
+
+void ProcessorPlugin::applyWhitening(AudioSampleBuffer& buffer) {
+    int numSample = buffer.getNumSamples();
+    int numChannel = buffer.getNumChannels();
+    auto buffer_ptr = buffer.getWritePointer(0);
+    Eigen::Map<MatrixXf> input_data(buffer_ptr, DATA_CHANNEL, numSample);
+
+    // remove mean
+    auto mean = input_data.rowwise().mean();
+    input_data = input_data.colwise() - mean;
+
+    //whitening
+    //input_data.array() *= 0;
+    input_data = m_W * input_data;
+}
+
 void ProcessorPlugin::process(AudioSampleBuffer& buffer)
 {
     // 1. place any new samples into the displayBuffer
   //std::cout << "Display node sample count: " << nSamples << std::endl; ///buffer.getNumSamples() << std::endl;
-
     if (true)
     {
         ScopedLock displayLock(displayMutex);
 
 
-        if (true)
+        if (readyChannel < DATA_CHANNEL)
         {
             int channelIndex = -1;
 
             for (int chan = 0; chan < buffer.getNumChannels(); ++chan)
             {
-
 
                 const int samplesLeft = displayBuffers->getNumSamples() - displayBufferIndices[chan];
                 const int nSamples = getNumSamples(chan);
@@ -169,6 +254,7 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
                         0,                         // source start sample
                         samplesLeft);              // numSamples
 
+                    // Wrap around
                     displayBuffers->copyFrom(chan,                      // destChannel
                         0,                         // destStartSample
                         buffer,                    // source
@@ -177,11 +263,33 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
                         extraSamples);             // numSamples
 
                     displayBufferIndices[chan] = extraSamples;
+
+                    readyChannel++;
+                    /*isBufferReady = true;
+                    std::cout << "Buffer is ready" << std::endl;
+
+                    calculateWhiteningMatrix();*/
                 }
             }
+
+
             std::cout << "Buffer index of chan 0" << displayBufferIndices[0] << std::endl;
+            
 
         }
+        else {
+            //cout << "Buffer is ready" << std::endl;
+            if (!m_whiteningMatrixReady) {
+                calculateWhiteningMatrix();
+                cout << "Whitening matrix updated" << endl;
+            }
+            else {
+                applyWhitening(buffer);
+            }
+
+        }
+        
+
     }
 
 	//Do whatever processing needed

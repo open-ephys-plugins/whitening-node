@@ -3,7 +3,11 @@
 #define PROCESSORPLUGIN_H_DEFINED
 
 #include <ProcessorHeaders.h>
+#include "Eigen/Dense"
+
 using namespace std;
+using Eigen::MatrixXf;
+
 
 //namespace must be an unique name for your plugin
 namespace ProcessorPluginSpace
@@ -76,7 +80,6 @@ namespace ProcessorPluginSpace
 		void setSubprocessor(uint32 sp);
 		uint32 getSubprocessor() const;
 
-
 	private:
 		// use to calculating the whitening matrixm, it is a vector of vector, each channel has its own 
 		std::shared_ptr<AudioSampleBuffer> whiteningBuffers; 
@@ -101,6 +104,13 @@ namespace ProcessorPluginSpace
 		static uint32 getChannelSourceId(const InfoObjectCommon* chan);
 		CriticalSection displayMutex;
 
+		bool isBufferReady = false;
+		int readyChannel = 0;
+
+		MatrixXf m_W;
+		bool m_whiteningMatrixReady = false;
+		void calculateWhiteningMatrix();
+		void applyWhitening(AudioSampleBuffer& buffer);
 
 	};
 }
