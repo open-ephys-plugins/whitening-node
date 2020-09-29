@@ -151,7 +151,6 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
     int numChannel = displayBuffers->getNumChannels();
     auto buffer_ptr = displayBuffers->getWritePointer(0); //get the beginning of the data
     Eigen::Map<Matrix<float,Dynamic, Dynamic, RowMajor>> m(buffer_ptr, DATA_CHANNEL,numSample); // by default MatrixXf is column-major
-    //m.transposeInPlace();  //need to use this, otherwise encounter aliasing issue
 
     ofstream bufferData;
     bufferData.open("buffer.csv");
@@ -223,7 +222,7 @@ void ProcessorPlugin::applyWhitening(AudioSampleBuffer& buffer) {
     int numSample = buffer.getNumSamples();
     int numChannel = buffer.getNumChannels();
     auto buffer_ptr = buffer.getWritePointer(0);
-    Eigen::Map<MatrixXf> input_data(buffer_ptr, DATA_CHANNEL, numSample);
+    Map<Matrix<float, Dynamic, Dynamic, RowMajor>> input_data(buffer_ptr, DATA_CHANNEL, numSample);
 
     // remove mean
     auto mean = input_data.rowwise().mean();
