@@ -1,7 +1,8 @@
 #include "ProcessorPlugin.h"
+#include <fstream>
 
 using namespace ProcessorPluginSpace;
-using Eigen::MatrixXf;
+using namespace Eigen;
 using std::sqrt;
 
 #define DATA_CHANNEL 16 //tetrode channels, TODO: hardcoded for nowm need to get the neural data channels
@@ -10,7 +11,7 @@ using std::sqrt;
 ProcessorPlugin::ProcessorPlugin() : 
     GenericProcessor("Whitening")
     , abstractFifo(100)
-    , bufferLength(10.0f)
+    , bufferLength(2.0f)
 {
     subprocessorToDraw = 0;
     numSubprocessors = -1;
@@ -138,6 +139,10 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
     data is arranged in channel-major format
 
     */
+
+    ofstream file;
+    file.open("whitening_results.txt");
+
     
     // Copy data over to the 
   /*  AudioSampleBuffer buffer_copy;
@@ -145,7 +150,14 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
     int numSample = displayBuffers->getNumSamples();
     int numChannel = displayBuffers->getNumChannels();
     auto buffer_ptr = displayBuffers->getWritePointer(0); //get the beginning of the data
-    Eigen::Map<MatrixXf> m(buffer_ptr, DATA_CHANNEL, numSample); // channel x time
+    Eigen::Map<Matrix<float,Dynamic, Dynamic, RowMajor>> m(buffer_ptr, DATA_CHANNEL,numSample); // by default MatrixXf is column-major
+    //m.transposeInPlace();  //need to use this, otherwise encounter aliasing issue
+
+    ofstream bufferData;
+    bufferData.open("buffer.csv");
+    bufferData << m;
+    bufferData.close();
+
 
     //MatrixXf m(3,6);
 
@@ -157,6 +169,9 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
     //cout << "m:" << endl << m << endl;
 
     auto mean = m.rowwise().mean();
+
+    file << "mean" << endl << mean << endl;;
+    
     //std::cout << mean << endl;
 
     // subtract the mean
@@ -164,6 +179,7 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
 
      //Covariation matrix
     auto AAt = m * m.transpose() / numSample;
+    file << "Covariance matrix" << endl << AAt << endl;
    /* cout << "Covariance matrix" << endl << AAt <<endl;*/
 
     // SVD
@@ -183,16 +199,21 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
 
   /*  cout << "S" << endl;
     cout << S << endl;*/
+    file << "S" << endl << S << endl;
 
 
     // Apply whitening
     auto sinv = S.matrix().cwiseSqrt().cwiseInverse().asDiagonal();
     m_W = (U * sinv * V.transpose());
 
+    file << "W" << endl << m_W << endl;
+
    /* cout << "W" << endl;
     cout << m_W << endl;*/
 
     m_whiteningMatrixReady = true;
+
+    file.close();
 
 
 }
@@ -224,7 +245,6 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
 
         if (readyChannel < DATA_CHANNEL)
         {
-            int channelIndex = -1;
 
             for (int chan = 0; chan < buffer.getNumChannels(); ++chan)
             {
@@ -273,7 +293,12 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
             }
 
 
-            std::cout << "Buffer index of chan 0" << displayBufferIndices[0] << std::endl;
+            std::cout << "Buffer index " << displayBufferIndices[0]<<  endl;
+           /* for (int i = 0; i < displayBufferIndices.size(); i++) {
+                cout << displayBufferIndices[0];
+            }
+            cout << endl;*/
+            
             
 
         }
