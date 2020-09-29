@@ -1,5 +1,6 @@
 #include "ProcessorPlugin.h"
 #include <fstream>
+#include <chrono>
 
 using namespace ProcessorPluginSpace;
 using namespace Eigen;
@@ -11,7 +12,7 @@ using std::sqrt;
 ProcessorPlugin::ProcessorPlugin() : 
     GenericProcessor("Whitening")
     , abstractFifo(100)
-    , bufferLength(2.0f)
+    , bufferLength(10.0f)
 {
     subprocessorToDraw = 0;
     numSubprocessors = -1;
@@ -140,10 +141,11 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
 
     */
 
-    ofstream file;
-    file.open("whitening_results.txt");
+    /*ofstream file;
+    file.open("whitening_results.txt");*/
 
-    
+    auto start = chrono::system_clock::now();
+
     // Copy data over to the 
   /*  AudioSampleBuffer buffer_copy;
     buffer_copy.makeCopyOf(buffer);*/
@@ -152,10 +154,10 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
     auto buffer_ptr = displayBuffers->getWritePointer(0); //get the beginning of the data
     Eigen::Map<Matrix<float,Dynamic, Dynamic, RowMajor>> m(buffer_ptr, DATA_CHANNEL,numSample); // by default MatrixXf is column-major
 
-    ofstream bufferData;
-    bufferData.open("buffer.csv");
-    bufferData << m;
-    bufferData.close();
+    //ofstream bufferData;
+    //bufferData.open("buffer.csv");
+    //bufferData << m;
+    //bufferData.close();
 
 
     //MatrixXf m(3,6);
@@ -169,7 +171,7 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
 
     auto mean = m.rowwise().mean();
 
-    file << "mean" << endl << mean << endl;;
+    //file << "mean" << endl << mean << endl;;
     
     //std::cout << mean << endl;
 
@@ -178,7 +180,7 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
 
      //Covariation matrix
     auto AAt = m * m.transpose() / numSample;
-    file << "Covariance matrix" << endl << AAt << endl;
+    //file << "Covariance matrix" << endl << AAt << endl;
    /* cout << "Covariance matrix" << endl << AAt <<endl;*/
 
     // SVD
@@ -188,7 +190,7 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
     auto U = svdSolver.matrixU();
     auto V = svdSolver.matrixV();
     auto S = svdSolver.singularValues();
-    S.array() += 0.0001; //avoid divide by zero
+    //S.array() += 0.0001; //avoid divide by zero
 
     //cout << "U" << endl;
     //cout << U << endl;
@@ -198,21 +200,26 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
 
   /*  cout << "S" << endl;
     cout << S << endl;*/
-    file << "S" << endl << S << endl;
+    //file << "S" << endl << S << endl;
 
 
     // Apply whitening
     auto sinv = S.matrix().cwiseSqrt().cwiseInverse().asDiagonal();
     m_W = (U * sinv * V.transpose());
 
-    file << "W" << endl << m_W << endl;
+    //file << "W" << endl << m_W << endl;
 
    /* cout << "W" << endl;
     cout << m_W << endl;*/
 
     m_whiteningMatrixReady = true;
 
-    file.close();
+    //file.close();
+
+    auto end = chrono::system_clock::now();
+
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    cout << "Whitening took " << elapsed_seconds.count() << "s" << endl;
 
 
 }
@@ -292,7 +299,7 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
             }
 
 
-            std::cout << "Buffer index " << displayBufferIndices[0]<<  endl;
+            //std::cout << "Buffer index " << displayBufferIndices[0]<<  endl;
            /* for (int i = 0; i < displayBufferIndices.size(); i++) {
                 cout << displayBufferIndices[0];
             }
@@ -302,8 +309,8 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
 
         }
         else {
-            //cout << "Buffer is ready" << std::endl;
             if (!m_whiteningMatrixReady) {
+                cout << "Buffer is ready" << std::endl;
                 calculateWhiteningMatrix();
                 cout << "Whitening matrix updated" << endl;
             }
@@ -316,15 +323,6 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
 
     }
 
-	//Do whatever processing needed
-
-	//MatrixXd m(2, 2);
-	//m(0, 0) = 3;
-	//m(1, 0) = 2.5;
-	//m(0, 1) = -1;
-	//m(1, 1) = m(1, 0) + m(0, 1);
-	//std::cout << m << std::endl;
-	
 	 
 }
 
