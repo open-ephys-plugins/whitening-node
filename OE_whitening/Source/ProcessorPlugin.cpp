@@ -326,3 +326,8 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
 	 
 }
 
+
+AudioProcessorEditor* ProcessorPlugin::createEditor() {
+    editor = new ProcessorEditor(this,true);
+    return editor;
+}

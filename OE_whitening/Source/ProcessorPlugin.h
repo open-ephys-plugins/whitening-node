@@ -4,6 +4,7 @@
 
 #include <ProcessorHeaders.h>
 #include "Eigen/Dense"
+#include "ProcessorEditor.h"
 
 using namespace std;
 using Eigen::MatrixXf;
@@ -22,10 +23,10 @@ namespace ProcessorPluginSpace
 		~ProcessorPlugin();
 
 		/** Indicates if the processor has a custom editor. Defaults to false */
-		//bool hasEditor() const { return true; }
+		bool hasEditor() const { return true; }
 
 		/** If the processor has a custom editor, this method must be defined to instantiate it. */
-		//AudioProcessorEditor* createEditor() override;
+		AudioProcessorEditor* createEditor() override;
 
 		/** Optional method that informs the GUI if the processor is ready to function. If false acquisition cannot start. Defaults to true */
 		//bool isReady();
@@ -79,6 +80,7 @@ namespace ProcessorPluginSpace
 		uint32 getDataSubprocId(int chan) const;
 		void setSubprocessor(uint32 sp);
 		uint32 getSubprocessor() const;
+
 
 	private:
 		// use to calculating the whitening matrixm, it is a vector of vector, each channel has its own 
