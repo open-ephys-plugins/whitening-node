@@ -2,6 +2,7 @@
 #include "ProcessorEditor.h"
 #include "ProcessorPlugin.h"
 #include <stdio.h>
+#include "GridLayout.h"
 
 using namespace ProcessorPluginSpace;
 
@@ -73,28 +74,37 @@ void ProcessorEditor::updateToggleState(Button* button) {
 
 void ProcessorEditor::resized() {
     auto area = getLocalBounds();
-    auto padding = 10;
-    auto leftPanelWidth = area.getWidth() / 2 - 2*padding;
-    auto contentItemHeight = 24;
-    auto titleSize = 30;
+    //auto padding = 10;
+    //auto leftPanelWidth = area.getWidth() / 2 - 2*padding;
+    //auto contentItemHeight = 24;
+    //auto titleSize = 30;
 
-    area.removeFromTop(titleSize);
+    //area.removeFromTop(titleSize);
 
-    auto leftPanel = area.removeFromLeft(leftPanelWidth);
+    //auto leftPanel = area.removeFromLeft(leftPanelWidth);
 
-    //add padding
-    leftPanel.removeFromLeft(padding);
-    leftPanel.removeFromRight(padding);
-    area.removeFromLeft(padding);
-    area.removeFromRight(padding);
+    ////add padding
+    //leftPanel.removeFromLeft(padding);
+    //leftPanel.removeFromRight(padding);
+    //area.removeFromLeft(padding);
+    //area.removeFromRight(padding);
 
-    bufferSizeLabel->setBounds(leftPanel.removeFromTop(contentItemHeight));
-    bufferSizeValue->setBounds(leftPanel.removeFromTop(contentItemHeight));
-    whiteningToggle->setBounds(leftPanel.removeFromTop(contentItemHeight));
+    //bufferSizeLabel->setBounds(leftPanel.removeFromTop(contentItemHeight));
+    //bufferSizeValue->setBounds(leftPanel.removeFromTop(contentItemHeight));
+    //whiteningToggle->setBounds(leftPanel.removeFromTop(contentItemHeight));
 
-    whiteningStatusLabel->setBounds(area.removeFromTop(contentItemHeight));
-    whiteningStatusValue->setBounds(area.removeFromTop(contentItemHeight));
-    resetButton->setBounds(area.removeFromTop(contentItemHeight));
+    //whiteningStatusLabel->setBounds(area.removeFromTop(contentItemHeight));
+    //whiteningStatusValue->setBounds(area.removeFromTop(contentItemHeight));
+    //resetButton->setBounds(area.removeFromTop(contentItemHeight));
+
+    GridLayout layout(area, 3, 2);
+    bufferSizeLabel->setBounds(layout.getBoundAt(0, 0));
+    bufferSizeValue->setBounds(layout.getBoundAt(1,0));
+    whiteningToggle->setBounds(layout.getBoundAt(2,0));
+
+    whiteningStatusLabel->setBounds(layout.getBoundAt(0,1));
+    whiteningStatusValue->setBounds(layout.getBoundAt(1,1));
+    resetButton->setBounds(layout.getBoundAt(2,1));
 
 }
 
