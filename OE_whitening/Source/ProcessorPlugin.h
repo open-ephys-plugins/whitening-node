@@ -80,7 +80,10 @@ namespace ProcessorPluginSpace
 		uint32 getDataSubprocId(int chan) const;
 		void setSubprocessor(uint32 sp);
 		uint32 getSubprocessor() const;
-
+		void resetBuffer();
+		void setBufferLength(double bufferLength);
+		void setApplyWhitening(bool isApply) { isApplyWhitening = isApply; };
+	
 
 	private:
 		// use to calculating the whitening matrixm, it is a vector of vector, each channel has its own 
@@ -88,7 +91,7 @@ namespace ProcessorPluginSpace
 		std::shared_ptr<AudioSampleBuffer> displayBuffers; //a smart pointer to manage the buffer object
 
 		AbstractFifo abstractFifo;
-		float bufferLength; // in second
+		float bufferLength=2; // in second
 
 		bool resizeBuffer();
 
@@ -106,13 +109,14 @@ namespace ProcessorPluginSpace
 		static uint32 getChannelSourceId(const InfoObjectCommon* chan);
 		CriticalSection displayMutex;
 
-		bool isBufferReady = false;
-		int readyChannel = 0;
+		bool isBufferReady = false; //whether the buffer is ready to calculate whitening matrix
+		int readyChannel = 0; //how many channel has is full in the buffer
 
 		MatrixXf m_W;
-		bool m_whiteningMatrixReady = false;
+		bool m_whiteningMatrixReady = false; //whether whitening matrix is ready
 		void calculateWhiteningMatrix();
 		void applyWhitening(AudioSampleBuffer& buffer);
+		bool isApplyWhitening = true; //whether to apply whitening online
 
 	};
 }

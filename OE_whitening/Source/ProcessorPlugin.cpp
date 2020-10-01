@@ -12,7 +12,6 @@ using std::sqrt;
 ProcessorPlugin::ProcessorPlugin() : 
     GenericProcessor("Whitening")
     , abstractFifo(100)
-    , bufferLength(10.0f)
 {
     subprocessorToDraw = 0;
     numSubprocessors = -1;
@@ -105,6 +104,8 @@ float ProcessorPlugin::getSubprocessorSampleRate(uint32 subprocId)
 
 bool ProcessorPlugin::resizeBuffer()
 {
+    //Resize and reset the buffer
+
     int totalResized = 0;
 
     ScopedLock displayLock(displayMutex);
@@ -125,6 +126,14 @@ bool ProcessorPlugin::resizeBuffer()
         displayBufferIndices.clear();
         displayBufferIndices.insert(displayBufferIndices.end(), nInputs + 1, 0);
     }
+
+    //clear some book keeping variables as well
+    readyChannel = 0;
+    isBufferReady = false;
+    m_whiteningMatrixReady = false;
+
+    ProcessorEditor* editor = (ProcessorEditor*)getEditor();
+    editor->setWhiteningStatus("Waiting...");
 
     return true;
 
@@ -221,6 +230,9 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
     std::chrono::duration<double> elapsed_seconds = end - start;
     cout << "Whitening took " << elapsed_seconds.count() << "s" << endl;
 
+    ProcessorEditor* editor = (ProcessorEditor*)getEditor();
+    editor->setWhiteningStatus("Ready");
+
 
 }
 
@@ -291,22 +303,12 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
                     displayBufferIndices[chan] = extraSamples;
 
                     readyChannel++;
-                    /*isBufferReady = true;
-                    std::cout << "Buffer is ready" << std::endl;
 
-                    calculateWhiteningMatrix();*/
                 }
             }
 
 
-            //std::cout << "Buffer index " << displayBufferIndices[0]<<  endl;
-           /* for (int i = 0; i < displayBufferIndices.size(); i++) {
-                cout << displayBufferIndices[0];
-            }
-            cout << endl;*/
-            
-            
-
+       
         }
         else {
             if (!m_whiteningMatrixReady) {
@@ -315,7 +317,10 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
                 cout << "Whitening matrix updated" << endl;
             }
             else {
-                applyWhitening(buffer);
+                if (isApplyWhitening) {
+                    applyWhitening(buffer);
+                }
+                
             }
 
         }
@@ -330,4 +335,14 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
 AudioProcessorEditor* ProcessorPlugin::createEditor() {
     editor = new ProcessorEditor(this,true);
     return editor;
+}
+
+void ProcessorPlugin::resetBuffer() {
+    resizeBuffer();
+}
+
+
+void ProcessorPlugin::setBufferLength(double length) {
+    bufferLength = length;
+    resizeBuffer();
 }
