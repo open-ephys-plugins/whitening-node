@@ -17,6 +17,8 @@ public:
     void buttonClicked(juce::Button* button) override;
     void resetBuffer();
     void setWhiteningStatus(String status);
+    void saveCustomParameters(XmlElement* xml);
+    void loadCustomParameters(XmlElement* xml);
      
 
 private:

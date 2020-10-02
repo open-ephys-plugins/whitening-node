@@ -159,3 +159,30 @@ void ProcessorEditor::setWhiteningStatus(String status)
     }
 }
 
+void ProcessorEditor::saveCustomParameters(XmlElement* xml)
+{
+    std::cout << "Writing whitening editor parameters" << std::endl;
+    xml->setAttribute("Type", "WhiteningEditor");
+    String bufferSize = bufferSizeValue->getTextValue().getValue();
+    XmlElement* textLabelValues = xml->createNewChildElement("VALUES");
+    textLabelValues->setAttribute("BufferSize", bufferSize);
+
+
+
+}
+
+void ProcessorEditor::loadCustomParameters(XmlElement* xml)
+{
+    std::cout << "Loading Whitening editor parameters" << std::endl;
+
+    forEachXmlChildElement(*xml, xmlNode)
+    {
+        if (xmlNode->hasTagName("VALUES"))
+        {
+            String bufferSize = "10";
+            bufferSize = xmlNode->getStringAttribute("BufferSize", bufferSize);
+            bufferSizeValue->setText(bufferSize, sendNotification);
+        }
+    }
+}
+
