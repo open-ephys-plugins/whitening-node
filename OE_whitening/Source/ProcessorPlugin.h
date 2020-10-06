@@ -91,7 +91,7 @@ namespace ProcessorPluginSpace
 		std::shared_ptr<AudioSampleBuffer> displayBuffers; //a smart pointer to manage the buffer object
 
 		AbstractFifo abstractFifo;
-		float bufferLength=2; // in second
+		float bufferLength=10; // in second
 
 		bool resizeBuffer();
 
@@ -117,6 +117,7 @@ namespace ProcessorPluginSpace
 		void calculateWhiteningMatrix();
 		void applyWhitening(AudioSampleBuffer& buffer);
 		bool isApplyWhitening = true; //whether to apply whitening online
+		bool isNeedWhiteningUpdate = true; //whether to recalculate the whitening matrix
 
 	};
 }

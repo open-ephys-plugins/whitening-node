@@ -130,7 +130,8 @@ bool ProcessorPlugin::resizeBuffer()
     //clear some book keeping variables as well
     readyChannel = 0;
     isBufferReady = false;
-    m_whiteningMatrixReady = false;
+    isNeedWhiteningUpdate = true;
+    //m_whiteningMatrixReady = false;
 
     ProcessorEditor* editor = (ProcessorEditor*)getEditor();
     editor->setWhiteningStatus("Waiting...");
@@ -222,6 +223,7 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
     cout << m_W << endl;*/
 
     m_whiteningMatrixReady = true;
+    isNeedWhiteningUpdate = false;
 
     //file.close();
 
@@ -311,21 +313,20 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
        
         }
         else {
-            if (!m_whiteningMatrixReady) {
+            if (isNeedWhiteningUpdate) {
                 cout << "Buffer is ready" << std::endl;
                 calculateWhiteningMatrix();
                 cout << "Whitening matrix updated" << endl;
             }
-            else {
-                if (isApplyWhitening) {
-                    applyWhitening(buffer);
-                }
-                
-            }
-
+   
         }
-        
 
+        // allow whitening to run even through the buffer is 
+        if (m_whiteningMatrixReady) {
+            if (isApplyWhitening) {
+                applyWhitening(buffer);
+            }
+        }
     }
 
 	 

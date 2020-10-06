@@ -23,7 +23,7 @@ ProcessorEditor::ProcessorEditor(GenericProcessor* parentNode, bool useDefaultPa
     bufferSizeLabel->setColour(juce::TextEditor::backgroundColourId, juce::Colour(0x00000000));
 
     bufferSizeValue.reset(new juce::Label("new label",
-        TRANS("2")));
+        TRANS("10")));
     addAndMakeVisible(bufferSizeValue.get());
     bufferSizeValue->setJustificationType(juce::Justification::centredLeft);
     bufferSizeValue->setEditable(true,true,true);
