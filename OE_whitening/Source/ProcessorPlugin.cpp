@@ -6,7 +6,6 @@ using namespace ProcessorPluginSpace;
 using namespace Eigen;
 using std::sqrt;
 
-#define DATA_CHANNEL 16 //tetrode channels, TODO: hardcoded for nowm need to get the neural data channels
 
 //Change all names for the relevant ones, including "Processor Name"
 ProcessorPlugin::ProcessorPlugin() : 
@@ -160,9 +159,17 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
   /*  AudioSampleBuffer buffer_copy;
     buffer_copy.makeCopyOf(buffer);*/
     int numSample = displayBuffers->getNumSamples();
-    int numChannel = displayBuffers->getNumChannels();
+    
+    //calculate the number of data channel
+    for (int n = 0; n < dataChannelArray.size(); n++) {
+        if (dataChannelArray[n]->getChannelType() == DataChannel::HEADSTAGE_CHANNEL) {
+            numDataChannel++;
+        }
+    }
+
+    std::cout << "Number of channel in whitening plugin: " << numDataChannel << std::endl;
     auto buffer_ptr = displayBuffers->getWritePointer(0); //get the beginning of the data
-    Eigen::Map<Matrix<float,Dynamic, Dynamic, RowMajor>> m(buffer_ptr, DATA_CHANNEL,numSample); // by default MatrixXf is column-major
+    Eigen::Map<Matrix<float,Dynamic, Dynamic, RowMajor>> m(buffer_ptr, numDataChannel, numSample); // by default MatrixXf is column-major
 
     //ofstream bufferData;
     //bufferData.open("buffer.csv");
@@ -241,9 +248,8 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
 
 void ProcessorPlugin::applyWhitening(AudioSampleBuffer& buffer) {
     int numSample = buffer.getNumSamples();
-    int numChannel = buffer.getNumChannels();
     auto buffer_ptr = buffer.getWritePointer(0);
-    Map<Matrix<float, Dynamic, Dynamic, RowMajor>> input_data(buffer_ptr, DATA_CHANNEL, numSample);
+    Map<Matrix<float, Dynamic, Dynamic, RowMajor>> input_data(buffer_ptr, numDataChannel, numSample);
 
     // remove mean
     auto mean = input_data.rowwise().mean();

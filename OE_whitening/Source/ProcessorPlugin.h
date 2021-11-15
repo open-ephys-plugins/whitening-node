@@ -118,6 +118,7 @@ namespace ProcessorPluginSpace
 		void applyWhitening(AudioSampleBuffer& buffer);
 		bool isApplyWhitening = true; //whether to apply whitening online
 		bool isNeedWhiteningUpdate = true; //whether to recalculate the whitening matrix
+		int numDataChannel = 0;
 
 	};
 }
