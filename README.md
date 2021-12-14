@@ -16,6 +16,6 @@ Please follow the instruction in the [Open Ephys wiki](https://open-ephys.atlass
 
 ## Notes
 - This plugin only applys whitening on data channel, so the channel type must be set properly.
-
+- After whitening, the signal amplitude will change, so you may want to adjust the signal range of the LFP Viewer accordingly.
 
 
