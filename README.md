@@ -15,7 +15,7 @@ This filter plugin implements online whitening on neural signal. It is useful fo
 Please follow the instruction in the [Open Ephys wiki](https://open-ephys.atlassian.net/wiki/spaces/OEW/pages/1301643269/Creating+Build+files) for building this plugin. This plugin is developed in Visual Studio 2019 in Windows. It should also works in other Visual Studio verions or OS, but they are not tested. 
 
 ## Notes
-- This plugin only apply whitening on data channel, so the channel type must be set properly.
+- This plugin only applys whitening on data channel, so the channel type must be set properly.
 
 
 
