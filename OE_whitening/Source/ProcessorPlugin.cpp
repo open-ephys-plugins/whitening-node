@@ -47,7 +47,15 @@ void ProcessorPlugin::updateSettings()
         std::cout << "Sample rate = " << samplingRate << std::endl;
     }
 
+    //calculate the number of data channel. Note: this function will be called many times
+    numDataChannel = 0;
+    for (int n = 0; n < dataChannelArray.size(); n++) {
+        if (dataChannelArray[n]->getChannelType() == DataChannel::HEADSTAGE_CHANNEL) {
+            numDataChannel++;
+        }
+    }
 
+    std::cout << "Whitening: Number of data channel: " << numDataChannel << std::endl;
 
     resizeBuffer();
 
@@ -110,20 +118,20 @@ bool ProcessorPlugin::resizeBuffer()
     ScopedLock displayLock(displayMutex);
 
     int nSamples = (int)samplingRate * bufferLength; //always return the first subprocessor
-    int nInputs = numChannels;
+    int nInputs = numDataChannel; // the display buffer only contains headstage data channels
 
     std::cout << "Resizing buffer " << ". Samples: " << nSamples << ", Inputs: " << nInputs << std::endl;
 
     if (nSamples > 0 && nInputs > 0)
     {
         abstractFifo.setTotalSize(nSamples);
-        displayBuffers->setSize(nInputs + 1, nSamples); // add extra channel for TTLs
+        displayBuffers->setSize(nInputs, nSamples); // add extra channel for TTLs
         displayBuffers->clear();
 
         //displayBufferIndices[currSubproc].clear();
         //displayBufferIndices[currSubproc].insert(displayBufferIndices[currSubproc].end(), nInputs + 1, 0);
         displayBufferIndices.clear();
-        displayBufferIndices.insert(displayBufferIndices.end(), nInputs + 1, 0);
+        displayBufferIndices.insert(displayBufferIndices.end(), nInputs, 0);
     }
 
     //clear some book keeping variables as well
@@ -159,32 +167,13 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
   /*  AudioSampleBuffer buffer_copy;
     buffer_copy.makeCopyOf(buffer);*/
     int numSample = displayBuffers->getNumSamples();
-    
-    //calculate the number of data channel
-    for (int n = 0; n < dataChannelArray.size(); n++) {
-        if (dataChannelArray[n]->getChannelType() == DataChannel::HEADSTAGE_CHANNEL) {
-            numDataChannel++;
-        }
-    }
+    cout << "Calculating whitening matrix now" << endl;
+
 
     std::cout << "Number of channel in whitening plugin: " << numDataChannel << std::endl;
     auto buffer_ptr = displayBuffers->getWritePointer(0); //get the beginning of the data
     Eigen::Map<Matrix<float,Dynamic, Dynamic, RowMajor>> m(buffer_ptr, numDataChannel, numSample); // by default MatrixXf is column-major
 
-    //ofstream bufferData;
-    //bufferData.open("buffer.csv");
-    //bufferData << m;
-    //bufferData.close();
-
-
-    //MatrixXf m(3,6);
-
-   /* m << 1, 2, 3, 4, 5, 6,
-        1, 3, 2, 4, 5, 6,
-        1, 3, 2, 4, 5, 8;
-    int numSample = 6;*/
-
-    //cout << "m:" << endl << m << endl;
 
     auto mean = m.rowwise().mean();
 
@@ -195,10 +184,8 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
     // subtract the mean
     m = m.colwise() - mean;
 
-     //Covariation matrix
+     //Covariance matrix
     auto AAt = m * m.transpose() / numSample;
-    //file << "Covariance matrix" << endl << AAt << endl;
-   /* cout << "Covariance matrix" << endl << AAt <<endl;*/
 
     // SVD
     Eigen::BDCSVD<MatrixXf> svdSolver;
@@ -207,17 +194,6 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
     auto U = svdSolver.matrixU();
     auto V = svdSolver.matrixV();
     auto S = svdSolver.singularValues();
-    //S.array() += 0.0001; //avoid divide by zero
-
-    //cout << "U" << endl;
-    //cout << U << endl;
-
-    //cout << "V" << endl;
-    //cout << V << endl;
-
-  /*  cout << "S" << endl;
-    cout << S << endl;*/
-    //file << "S" << endl << S << endl;
 
 
     // Apply whitening
@@ -226,8 +202,6 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
 
     //file << "W" << endl << m_W << endl;
 
-   /* cout << "W" << endl;
-    cout << m_W << endl;*/
 
     m_whiteningMatrixReady = true;
     isNeedWhiteningUpdate = false;
@@ -268,11 +242,12 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
     {
         ScopedLock displayLock(displayMutex);
 
-
-        if (readyChannel < DATA_CHANNEL)
+        if (readyChannel < numDataChannel)
         {
+            //Store data in the displaybuffer so that we can estimate the whitening matrix later
 
-            for (int chan = 0; chan < buffer.getNumChannels(); ++chan)
+
+            for (int chan = 0; chan < numDataChannel; ++chan)
             {
 
                 const int samplesLeft = displayBuffers->getNumSamples() - displayBufferIndices[chan];
@@ -311,7 +286,6 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
                     displayBufferIndices[chan] = extraSamples;
 
                     readyChannel++;
-
                 }
             }
 
