@@ -1,14 +1,13 @@
-#include "ProcessorPlugin.h"
+#include "WhiteningNode.h"
 #include <fstream>
 #include <chrono>
 
-using namespace ProcessorPluginSpace;
 using namespace Eigen;
 using std::sqrt;
 
 
 //Change all names for the relevant ones, including "Processor Name"
-ProcessorPlugin::ProcessorPlugin() : 
+WhiteningNode::WhiteningNode() : 
     GenericProcessor("Whitening")
     , abstractFifo(100)
 {
@@ -18,15 +17,15 @@ ProcessorPlugin::ProcessorPlugin() :
     numChannels = 0;
 }
 
-ProcessorPlugin::~ProcessorPlugin()
+WhiteningNode::~WhiteningNode()
 {
 
 }
 
-void ProcessorPlugin::updateSettings()
+void WhiteningNode::updateSettings()
 {
 
-    std::cout << "Setting num inputs on ProcessorPlugin to " << getNumInputs() << std::endl;
+    std::cout << "Setting num inputs on WhiteningNode to " << getNumInputs() << std::endl;
 
     numChannelsInSubprocessor.clear();
     subprocessorSampleRate.clear();
@@ -41,7 +40,7 @@ void ProcessorPlugin::updateSettings()
     
     displayBuffers = std::make_shared<AudioSampleBuffer>(8, 100);
 
-    std::cout << "Re-setting num inputs on ProcessorPlugin to " << numChannels << std::endl;
+    std::cout << "Re-setting num inputs on WhiteningNode to " << numChannels << std::endl;
     if (numChannels > 0)
     {
         std::cout << "Sample rate = " << samplingRate << std::endl;
@@ -64,12 +63,12 @@ void ProcessorPlugin::updateSettings()
 
 
 
-uint32 ProcessorPlugin::getChannelSourceId(const InfoObjectCommon* chan)
+uint32 WhiteningNode::getChannelSourceId(const InfoObjectCommon* chan)
 {
     return getProcessorFullId(chan->getSourceNodeID(), chan->getSubProcessorIdx());
 }
 
-uint32 ProcessorPlugin::getDataSubprocId(int chan) const
+uint32 WhiteningNode::getDataSubprocId(int chan) const
 {
     if (chan < 0 || chan >= getTotalDataChannels())
     {
@@ -79,18 +78,18 @@ uint32 ProcessorPlugin::getDataSubprocId(int chan) const
     return getChannelSourceId(getDataChannel(chan));
 }
 
-void ProcessorPlugin::setSubprocessor(uint32 sp)
+void WhiteningNode::setSubprocessor(uint32 sp)
 {
     subprocessorToDraw = sp;
-    std::cout << "ProcessorPlugin setting subprocessor to " << sp << std::endl;
+    std::cout << "WhiteningNode setting subprocessor to " << sp << std::endl;
 }
 
-uint32 ProcessorPlugin::getSubprocessor() const
+uint32 WhiteningNode::getSubprocessor() const
 {
     return subprocessorToDraw;
 }
 
-int ProcessorPlugin::getNumSubprocessorChannels()
+int WhiteningNode::getNumSubprocessorChannels()
 {
     if (subprocessorToDraw != 0)
     {
@@ -99,7 +98,7 @@ int ProcessorPlugin::getNumSubprocessorChannels()
     return 0;
 }
 
-float ProcessorPlugin::getSubprocessorSampleRate(uint32 subprocId)
+float WhiteningNode::getSubprocessorSampleRate(uint32 subprocId)
 {
     auto entry = subprocessorSampleRate.find(subprocId);
     if (entry != subprocessorSampleRate.end())
@@ -109,7 +108,7 @@ float ProcessorPlugin::getSubprocessorSampleRate(uint32 subprocId)
     return 0.0f;
 }
 
-bool ProcessorPlugin::resizeBuffer()
+bool WhiteningNode::resizeBuffer()
 {
     //Resize and reset the buffer
 
@@ -147,7 +146,7 @@ bool ProcessorPlugin::resizeBuffer()
 
 }
 
-void ProcessorPlugin::calculateWhiteningMatrix() {
+void WhiteningNode::calculateWhiteningMatrix() {
     // Calculate the whitening matrix based on data in the buffer
 
      /*
@@ -220,7 +219,7 @@ void ProcessorPlugin::calculateWhiteningMatrix() {
 }
 
 
-void ProcessorPlugin::applyWhitening(AudioSampleBuffer& buffer) {
+void WhiteningNode::applyWhitening(AudioSampleBuffer& buffer) {
     int numSample = buffer.getNumSamples();
     auto buffer_ptr = buffer.getWritePointer(0);
     Map<Matrix<float, Dynamic, Dynamic, RowMajor>> input_data(buffer_ptr, numDataChannel, numSample);
@@ -234,7 +233,7 @@ void ProcessorPlugin::applyWhitening(AudioSampleBuffer& buffer) {
     input_data = m_W * input_data;
 }
 
-void ProcessorPlugin::process(AudioSampleBuffer& buffer)
+void WhiteningNode::process(AudioSampleBuffer& buffer)
 {
     // 1. place any new samples into the displayBuffer
   //std::cout << "Display node sample count: " << nSamples << std::endl; ///buffer.getNumSamples() << std::endl;
@@ -313,17 +312,17 @@ void ProcessorPlugin::process(AudioSampleBuffer& buffer)
 }
 
 
-AudioProcessorEditor* ProcessorPlugin::createEditor() {
+AudioProcessorEditor* WhiteningNode::createEditor() {
     editor = new ProcessorEditor(this,true);
     return editor;
 }
 
-void ProcessorPlugin::resetBuffer() {
+void WhiteningNode::resetBuffer() {
     resizeBuffer();
 }
 
 
-void ProcessorPlugin::setBufferLength(double length) {
+void WhiteningNode::setBufferLength(double length) {
     bufferLength = length;
     resizeBuffer();
 }

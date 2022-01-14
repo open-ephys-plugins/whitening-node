@@ -1,12 +1,10 @@
 
-#include "ProcessorEditor.h"
-#include "ProcessorPlugin.h"
+#include "WhiteningNodeEditor.h"
 #include <stdio.h>
 #include "GridLayout.h"
 
-using namespace ProcessorPluginSpace;
 
-ProcessorEditor::ProcessorEditor(GenericProcessor* parentNode, bool useDefaultParameterEditors = true)
+WhiteningNodeEditor::WhiteningNodeEditor(GenericProcessor* parentNode, bool useDefaultParameterEditors = true)
     : GenericEditor(parentNode, useDefaultParameterEditors)
 
 {
@@ -62,7 +60,7 @@ ProcessorEditor::ProcessorEditor(GenericProcessor* parentNode, bool useDefaultPa
 
 }
 
-void ProcessorEditor::updateToggleState(Button* button) {
+void WhiteningNodeEditor::updateToggleState(Button* button) {
     if (button == whiteningToggle.get()) {
         bool isApplyWhitening = button->getToggleState();
         std::cout << "setting isApplyWhitening to " << isApplyWhitening << std::endl;
@@ -72,7 +70,7 @@ void ProcessorEditor::updateToggleState(Button* button) {
 }
 
 
-void ProcessorEditor::resized() {
+void WhiteningNodeEditor::resized() {
     auto area = getLocalBounds();
     //auto padding = 10;
     //auto leftPanelWidth = area.getWidth() / 2 - 2*padding;
@@ -108,12 +106,12 @@ void ProcessorEditor::resized() {
 
 }
 
-ProcessorEditor::~ProcessorEditor()
+WhiteningNodeEditor::~WhiteningNodeEditor()
 {
 }
 
 
-void ProcessorEditor::labelTextChanged(Label* label)
+void WhiteningNodeEditor::labelTextChanged(Label* label)
 {
     if (label == bufferSizeValue.get()) {
         resetBuffer();
@@ -121,7 +119,7 @@ void ProcessorEditor::labelTextChanged(Label* label)
   
 }
 
-void ProcessorEditor::buttonClicked(Button* button) 
+void WhiteningNodeEditor::buttonClicked(Button* button) 
 {
     if (button == resetButton.get()) {
         resetBuffer();
@@ -131,7 +129,7 @@ void ProcessorEditor::buttonClicked(Button* button)
     }
 }
 
-void ProcessorEditor::resetBuffer() {
+void WhiteningNodeEditor::resetBuffer() {
     //reset the whitening buffer
 
     //Get underlying processor
@@ -149,7 +147,7 @@ void ProcessorEditor::resetBuffer() {
 
 }
 
-void ProcessorEditor::setWhiteningStatus(String status)
+void WhiteningNodeEditor::setWhiteningStatus(String status)
 {
     //If set from other than the main thread, need to acquire the lock first
     {
@@ -159,7 +157,7 @@ void ProcessorEditor::setWhiteningStatus(String status)
     }
 }
 
-void ProcessorEditor::saveCustomParameters(XmlElement* xml)
+void WhiteningNodeEditor::saveCustomParameters(XmlElement* xml)
 {
     std::cout << "Writing whitening editor parameters" << std::endl;
     xml->setAttribute("Type", "WhiteningEditor");
@@ -171,7 +169,7 @@ void ProcessorEditor::saveCustomParameters(XmlElement* xml)
 
 }
 
-void ProcessorEditor::loadCustomParameters(XmlElement* xml)
+void WhiteningNodeEditor::loadCustomParameters(XmlElement* xml)
 {
     std::cout << "Loading Whitening editor parameters" << std::endl;
 

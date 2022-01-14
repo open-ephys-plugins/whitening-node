@@ -4,14 +4,14 @@
 
 
 
-class ProcessorEditor : public GenericEditor,
+class WhiteningNodeEditor : public GenericEditor,
     public Label::Listener,
     public Button::Listener
 {
 public:
-    ProcessorEditor(GenericProcessor* parentNode, bool useDefaultParameterEditors);
+    WhiteningNodeEditor(GenericProcessor* parentNode, bool useDefaultParameterEditors);
     void updateToggleState(Button* button);
-    virtual ~ProcessorEditor();
+    virtual ~WhiteningNodeEditor();
     void resized() override;
     void labelTextChanged(Label* label);
     void buttonClicked(juce::Button* button) override;
@@ -31,5 +31,5 @@ private:
     std::unique_ptr<juce::ToggleButton> whiteningToggle;
     std::unique_ptr<juce::TextButton> resetButton;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ProcessorEditor);
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WhiteningNodeEditor);
 };
