@@ -139,7 +139,7 @@ bool WhiteningNode::resizeBuffer()
     isNeedWhiteningUpdate = true;
     //m_whiteningMatrixReady = false;
 
-    ProcessorEditor* editor = (ProcessorEditor*)getEditor();
+    WhiteningNodeEditor* editor = (WhiteningNodeEditor*)getEditor();
     editor->setWhiteningStatus("Waiting...");
 
     return true;
@@ -212,7 +212,7 @@ void WhiteningNode::calculateWhiteningMatrix() {
     std::chrono::duration<double> elapsed_seconds = end - start;
     cout << "Whitening took " << elapsed_seconds.count() << "s" << endl;
 
-    ProcessorEditor* editor = (ProcessorEditor*)getEditor();
+    WhiteningNodeEditor* editor = (WhiteningNodeEditor*)getEditor();
     editor->setWhiteningStatus("Ready");
 
 
@@ -313,7 +313,7 @@ void WhiteningNode::process(AudioSampleBuffer& buffer)
 
 
 AudioProcessorEditor* WhiteningNode::createEditor() {
-    editor = new ProcessorEditor(this,true);
+    editor = new WhiteningNodeEditor(this,true);
     return editor;
 }
 

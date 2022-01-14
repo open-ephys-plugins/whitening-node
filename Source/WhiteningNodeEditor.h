@@ -1,20 +1,19 @@
 #pragma once
 
 #include <EditorHeaders.h>
+#include "WhiteningNode.h"
 
-
-
+class WhiteningNode;
 class WhiteningNodeEditor : public GenericEditor,
-    public Label::Listener,
-    public Button::Listener
+    public juce::Label::Listener
 {
 public:
-    WhiteningNodeEditor(GenericProcessor* parentNode, bool useDefaultParameterEditors);
-    void updateToggleState(Button* button);
+    WhiteningNodeEditor(WhiteningNode* parentNode, bool useDefaultParameterEditors);
+    void updateToggleState(juce::Button* button);
     virtual ~WhiteningNodeEditor();
     void resized() override;
-    void labelTextChanged(Label* label);
-    void buttonClicked(juce::Button* button) override;
+    void labelTextChanged(juce::Label* label);
+    void buttonEvent(juce::Button* button) override;
     void resetBuffer();
     void setWhiteningStatus(String status);
     void saveCustomParameters(XmlElement* xml);
@@ -23,6 +22,7 @@ public:
 
 private:
 
+    WhiteningNode* processor;
     String bufferSizeString;
     std::unique_ptr<juce::Label> bufferSizeLabel;
     std::unique_ptr<juce::Label> bufferSizeValue;

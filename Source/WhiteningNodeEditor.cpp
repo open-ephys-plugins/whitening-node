@@ -4,10 +4,12 @@
 #include "GridLayout.h"
 
 
-WhiteningNodeEditor::WhiteningNodeEditor(GenericProcessor* parentNode, bool useDefaultParameterEditors = true)
+WhiteningNodeEditor::WhiteningNodeEditor(WhiteningNode* parentNode, bool useDefaultParameterEditors = true)
     : GenericEditor(parentNode, useDefaultParameterEditors)
 
 {
+    processor = parentNode;
+    
     desiredWidth = 300;
 
     float fontSize = 12;
@@ -50,7 +52,7 @@ WhiteningNodeEditor::WhiteningNodeEditor(GenericProcessor* parentNode, bool useD
     whiteningToggle.reset(new juce::ToggleButton("new toggle button"));
     addAndMakeVisible(whiteningToggle.get());
     whiteningToggle->setButtonText(TRANS("Apply whitening"));
-    whiteningToggle->setToggleState(true,true);
+    whiteningToggle->setToggleState(true, sendNotification);
     whiteningToggle->addListener(this);
 
     resetButton.reset(new juce::TextButton("new button"));
@@ -64,7 +66,6 @@ void WhiteningNodeEditor::updateToggleState(Button* button) {
     if (button == whiteningToggle.get()) {
         bool isApplyWhitening = button->getToggleState();
         std::cout << "setting isApplyWhitening to " << isApplyWhitening << std::endl;
-        ProcessorPlugin* processor = (ProcessorPlugin*)getProcessor();
         processor->setApplyWhitening(isApplyWhitening);
     }
 }
@@ -119,7 +120,7 @@ void WhiteningNodeEditor::labelTextChanged(Label* label)
   
 }
 
-void WhiteningNodeEditor::buttonClicked(Button* button) 
+void WhiteningNodeEditor::buttonEvent(Button* button) 
 {
     if (button == resetButton.get()) {
         resetBuffer();
@@ -131,12 +132,8 @@ void WhiteningNodeEditor::buttonClicked(Button* button)
 
 void WhiteningNodeEditor::resetBuffer() {
     //reset the whitening buffer
-
-    //Get underlying processor
-    ProcessorPlugin* processor = (ProcessorPlugin*)getProcessor();
-
     double bufferLengthNew = double(bufferSizeValue->getTextValue().getValue());
-    std::cout << "Reseting the buffer to " << bufferSizeValue << " s" << endl;
+    std::cout << "Reseting the buffer to " << bufferSizeValue->getText() << " s" << endl;
 
     //Set the correct buffer length
     processor->setBufferLength(bufferLengthNew);

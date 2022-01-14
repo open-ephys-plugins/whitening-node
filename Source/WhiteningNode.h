@@ -4,7 +4,7 @@
 
 #include <ProcessorHeaders.h>
 #include "Eigen/Dense"
-#include "ProcessorEditor.h"
+#include "WhiteningNodeEditor.h"
 
 using namespace std;
 using Eigen::MatrixXf;
@@ -100,8 +100,8 @@ private:
 	int numChannels;
 
 	std::vector<int> displayBufferIndices; //index for each channel
-	Array<int> channelIndices;
-	Array<uint32> eventSourceNodes;
+	juce::Array<int> channelIndices;
+	juce::Array<uint32> eventSourceNodes;
 	static uint32 getChannelSourceId(const InfoObjectCommon* chan);
 	CriticalSection displayMutex;
 
