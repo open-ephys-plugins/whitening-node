@@ -8,9 +8,10 @@ using std::sqrt;
 
 //Change all names for the relevant ones, including "Processor Name"
 WhiteningNode::WhiteningNode() : 
-    GenericProcessor("Whitening")
+    GenericProcessor("Whitening Node")
     , abstractFifo(100)
 {
+    setProcessorType (PROCESSOR_TYPE_FILTER);
     subprocessorToDraw = 0;
     numSubprocessors = -1;
     samplingRate = 0;
@@ -159,7 +160,8 @@ void WhiteningNode::calculateWhiteningMatrix() {
 
     /*ofstream file;
     file.open("whitening_results.txt");*/
-
+    WhiteningNodeEditor* editor = (WhiteningNodeEditor*)getEditor();
+    editor->setWhiteningStatus("Calculating...");
     auto start = chrono::system_clock::now();
 
     // Copy data over to the 
@@ -212,7 +214,6 @@ void WhiteningNode::calculateWhiteningMatrix() {
     std::chrono::duration<double> elapsed_seconds = end - start;
     cout << "Whitening took " << elapsed_seconds.count() << "s" << endl;
 
-    WhiteningNodeEditor* editor = (WhiteningNodeEditor*)getEditor();
     editor->setWhiteningStatus("Ready");
 
 

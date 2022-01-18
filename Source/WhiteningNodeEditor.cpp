@@ -12,50 +12,47 @@ WhiteningNodeEditor::WhiteningNodeEditor(WhiteningNode* parentNode, bool useDefa
     
     desiredWidth = 300;
 
-    float fontSize = 12;
-
-    bufferSizeLabel.reset(new juce::Label("new label",
+    bufferSizeLabel.reset(new juce::Label("Buffer Size Label",
         TRANS("Buffer size (s):\n")));
     addAndMakeVisible(bufferSizeLabel.get());
     bufferSizeLabel->setJustificationType(juce::Justification::centredLeft);
-    bufferSizeLabel->setEditable(false, false, false);
-    bufferSizeLabel->setColour(juce::TextEditor::textColourId, juce::Colours::black);
-    bufferSizeLabel->setColour(juce::TextEditor::backgroundColourId, juce::Colour(0x00000000));
+    bufferSizeLabel->setColour(juce::Label::textColourId, juce::Colours::darkgrey);
+    bufferSizeLabel->setFont(Font("Small Text", 12, Font::plain));
 
-    bufferSizeValue.reset(new juce::Label("new label",
+    bufferSizeValue.reset(new juce::Label("Buffer Size Value",
         TRANS("10")));
     addAndMakeVisible(bufferSizeValue.get());
     bufferSizeValue->setJustificationType(juce::Justification::centredLeft);
     bufferSizeValue->setEditable(true,true,true);
     bufferSizeValue->setColour(juce::Label::backgroundColourId, juce::Colours::grey);
-    bufferSizeValue->setColour(juce::TextEditor::textColourId, juce::Colours::black);
+    bufferSizeValue->setColour(juce::Label::textColourId, juce::Colours::white);
     bufferSizeValue->addListener(this);
+    bufferSizeValue->setFont(Font("Default", 16, Font::plain));
 
-    whiteningStatusLabel.reset(new juce::Label("new label",
-        TRANS("Whitening matrix")));
+    whiteningStatusLabel.reset(new juce::Label("Whtening status label",
+        TRANS("Whitening Matrix")));
     addAndMakeVisible(whiteningStatusLabel.get());
     whiteningStatusLabel->setJustificationType(juce::Justification::centredLeft);
-    whiteningStatusLabel->setEditable(false, false, false);
-    whiteningStatusLabel->setColour(juce::TextEditor::textColourId, juce::Colours::black);
-    whiteningStatusLabel->setColour(juce::TextEditor::backgroundColourId, juce::Colour(0x00000000));
+    whiteningStatusLabel->setColour(juce::Label::textColourId, juce::Colours::darkgrey);
+    whiteningStatusLabel->setFont(Font("Small Text", 12, Font::plain));
 
     whiteningStatusValue.reset(new juce::Label("new label",
-        TRANS("waiting...\n")));
+        TRANS("Waiting...\n")));
     addAndMakeVisible(whiteningStatusValue.get());
     whiteningStatusValue->setJustificationType(juce::Justification::centredLeft);
     whiteningStatusValue->setEditable(false, false, false);
-    whiteningStatusValue->setColour(juce::Label::backgroundColourId, juce::Colours::aquamarine);
-    whiteningStatusValue->setColour(juce::Label::textColourId, juce::Colours::blue);
-    whiteningStatusValue->setColour(juce::TextEditor::textColourId, juce::Colours::black);
-    whiteningStatusValue->setColour(juce::TextEditor::backgroundColourId, juce::Colour(0x00000000));
+    whiteningStatusValue->setColour(juce::Label::backgroundColourId, juce::Colours::grey);
+    whiteningStatusValue->setColour(juce::Label::textColourId, juce::Colours::white);
+    whiteningStatusValue->setFont(Font("Default", 16, Font::plain));
 
-    whiteningToggle.reset(new juce::ToggleButton("new toggle button"));
+    whiteningToggle.reset(new UtilityButton("Apply Whitening", Font("Default", 12, Font::plain)));
     addAndMakeVisible(whiteningToggle.get());
     whiteningToggle->setButtonText(TRANS("Apply whitening"));
+    whiteningToggle->setClickingTogglesState(true);
     whiteningToggle->setToggleState(true, sendNotification);
     whiteningToggle->addListener(this);
 
-    resetButton.reset(new juce::TextButton("new button"));
+    resetButton.reset(new UtilityButton("Reset Buffer", Font("Default", 12, Font::plain)));
     addAndMakeVisible(resetButton.get());
     resetButton->setButtonText(TRANS("Reset buffer"));
     resetButton->addListener(this);
@@ -72,38 +69,13 @@ void WhiteningNodeEditor::updateToggleState(Button* button) {
 
 
 void WhiteningNodeEditor::resized() {
-    auto area = getLocalBounds();
-    //auto padding = 10;
-    //auto leftPanelWidth = area.getWidth() / 2 - 2*padding;
-    //auto contentItemHeight = 24;
-    //auto titleSize = 30;
 
-    //area.removeFromTop(titleSize);
-
-    //auto leftPanel = area.removeFromLeft(leftPanelWidth);
-
-    ////add padding
-    //leftPanel.removeFromLeft(padding);
-    //leftPanel.removeFromRight(padding);
-    //area.removeFromLeft(padding);
-    //area.removeFromRight(padding);
-
-    //bufferSizeLabel->setBounds(leftPanel.removeFromTop(contentItemHeight));
-    //bufferSizeValue->setBounds(leftPanel.removeFromTop(contentItemHeight));
-    //whiteningToggle->setBounds(leftPanel.removeFromTop(contentItemHeight));
-
-    //whiteningStatusLabel->setBounds(area.removeFromTop(contentItemHeight));
-    //whiteningStatusValue->setBounds(area.removeFromTop(contentItemHeight));
-    //resetButton->setBounds(area.removeFromTop(contentItemHeight));
-
-    GridLayout layout(area, 3, 2);
-    bufferSizeLabel->setBounds(layout.getBoundAt(0, 0));
-    bufferSizeValue->setBounds(layout.getBoundAt(1,0));
-    whiteningToggle->setBounds(layout.getBoundAt(2,0));
-
-    whiteningStatusLabel->setBounds(layout.getBoundAt(0,1));
-    whiteningStatusValue->setBounds(layout.getBoundAt(1,1));
-    resetButton->setBounds(layout.getBoundAt(2,1));
+    bufferSizeLabel->setBounds(15, 25, 120, 25);
+    bufferSizeValue->setBounds(20, 50, 105, 25);
+    whiteningStatusLabel->setBounds(150, 25, 140, 25);
+    whiteningStatusValue->setBounds(150, 50, 135, 25);
+    resetButton->setBounds(20, 90, 105, 30);
+    whiteningToggle->setBounds(160, 90, 120, 30);
 
 }
 
@@ -137,10 +109,6 @@ void WhiteningNodeEditor::resetBuffer() {
 
     //Set the correct buffer length
     processor->setBufferLength(bufferLengthNew);
-
-    //Clear the buffer
-    processor->resetBuffer();
-
 
 }
 

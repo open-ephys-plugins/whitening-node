@@ -28,8 +28,8 @@ private:
     std::unique_ptr<juce::Label> bufferSizeValue;
     std::unique_ptr<juce::Label> whiteningStatusLabel;
     std::unique_ptr<juce::Label> whiteningStatusValue;
-    std::unique_ptr<juce::ToggleButton> whiteningToggle;
-    std::unique_ptr<juce::TextButton> resetButton;
+    std::unique_ptr<UtilityButton> whiteningToggle;
+    std::unique_ptr<UtilityButton> resetButton;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WhiteningNodeEditor);
 };
