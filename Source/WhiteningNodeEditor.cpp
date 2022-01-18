@@ -1,7 +1,6 @@
 
 #include "WhiteningNodeEditor.h"
 #include <stdio.h>
-#include "GridLayout.h"
 
 
 WhiteningNodeEditor::WhiteningNodeEditor(WhiteningNode* parentNode, bool useDefaultParameterEditors = true)
